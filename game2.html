@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Space Invaders</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="480" height="320"></canvas>
+    <script>
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+
+        // Игрок
+        var player = {
+            x: canvas.width/2,
+            y: canvas.height - 50,
+            width: 30,
+            height: 30,
+            speed: 5,
+            isShooting: false,
+            bullets: []
+        };
+
+        // Противники
+        var enemies = [];
+
+        // Создаем противников
+        initializeEnemies();
+
+        function initializeEnemies() {
+            for (var i = 0; i < 13; i++) {
+                var enemy = {
+                    x: 50 + i * 50,
+                    y: 50,
+                    width: 30,
+                    height: 30,
+                    speed: 1,
+                    isAlive: true
+                };
+                enemies.push(enemy);
+            }
+        }
+
+        // Счетчик очков
+        var score = 0;
+
+        // Обработчики клавиатуры
+        var leftPressed = false;
+        var rightPressed = false;
+        var spacePressed = false;
+
+        // Отрисовка игрока
+        function drawPlayer() {
+            ctx.beginPath();
+            ctx.rect(player.x, player.y, player.width, player.height);
+            ctx.fillStyle = "green";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Обновление положения игрока
+        function updatePlayer() {
+            if (leftPressed) {
+                player.x -= player.speed;
+            }
+            if (rightPressed) {
+                player.x += player.speed;
+            }
+            if (spacePressed && !player.isShooting) {
+                player.isShooting = true;
+                var bullet = {
+                    x: player.x + player.width/2 - 2,
+                    y: player.y,
+                    width: 4,
+                    height: 10,
+                    speed: 5
+                };
+                player.bullets.push(bullet);
+            }
+            for (var i = 0; i < player.bullets.length; i++) {
+                player.bullets[i].y -= player.bullets[i].speed;
+                if (player.bullets[i].y < 0) {
+                    player.bullets.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        // Отрисовка противника
+        function drawEnemy(enemy) {
+            ctx.beginPath();
+            ctx.rect(enemy.x, enemy.y, enemy.width, enemy.height);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Обновление положения противника
+        function updateEnemy(enemy) {
+            if (enemy.isAlive) {
+                enemy.x += enemy.speed;
+
+                // Если противник достиг левого края экрана, телепортируем его в правую часть экрана
+                if (enemy.x + enemy.width > canvas.width) {
+                    enemy.x = 0 - enemy.width;
+                }
+
+                            // Проверяем столкновение противника и пуль игрока
+            for (var i = 0; i < player.bullets.length; i++) {
+                var bullet = player.bullets[i];
+                if (enemy.isAlive && bullet.x < enemy.x + enemy.width && bullet.x + bullet.width > enemy.x && bullet.y < enemy.y + enemy.height && bullet.y + bullet.height > enemy.y) {
+                    enemy.isAlive = false;
+                    player.bullets.splice(i, 1);
+                    i--;
+                    score++;
+                }
+            }
+        }
+    }
+
+    // Отрисовка очков
+    function drawScore() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "black";
+        ctx.fillText("Score: " + score, 8, 20);
+    }
+
+    // Отрисовка всего на экране
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawPlayer();
+        for (var i = 0; i < enemies.length; i++) {
+            if (enemies[i].isAlive) {
+                drawEnemy(enemies[i]);
+            }
+        }
+        for (var i = 0; i < player.bullets.length; i++) {
+            ctx.beginPath();
+            ctx.rect(player.bullets[i].x, player.bullets[i].y, player.bullets[i].width, player.bullets[i].height);
+            ctx.fillStyle = "black";
+            ctx.fill();
+            ctx.closePath();
+        }
+        drawScore();
+    }
+
+    // Обновление всего на экране
+    function update() {
+        updatePlayer();
+        for (var i = 0; i < enemies.length; i++) {
+            updateEnemy(enemies[i]);
+        }
+    }
+
+    // Обработчики событий
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+    function keyDownHandler(event) {
+        if (event.keyCode === 65) {
+            leftPressed = true;
+        }
+        else if (event.keyCode === 68) {
+            rightPressed = true;
+        }
+        if (event.keyCode === 32) {
+            spacePressed = true;
+        }
+        if (event.keyCode === 80) {
+            location.reload();
+        }
+    }
+
+    function keyUpHandler(event) {
+        if (event.keyCode === 65) {
+            leftPressed = false;
+        }
+        else if (event.keyCode === 68) {
+            rightPressed = false;
+        }
+        if (event.keyCode === 32) {
+            player.isShooting = false;
+            spacePressed = false;
+        }
+    }
+
+    // Запускаем игру
+    setInterval(function() {
+        update();
+        draw();
+    }, 10);
+</script>
+</body>
+</html>
+

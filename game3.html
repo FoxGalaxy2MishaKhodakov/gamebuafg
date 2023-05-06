@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Крестики-нолики</title>
+	<style>
+		body {
+			background-color: purple;
+		}
+
+		.board {
+			display: flex;
+			flex-wrap: wrap;
+			width: 300px;
+			margin: 0 auto;
+			padding: 10px;
+			border: 2px solid blue;
+		}
+
+		.cell {
+			box-sizing: border-box;
+			height: 90px;
+			width: 90px;
+			padding: 10px;
+			background-color: white;
+			border: 2px solid blue;
+			font-size: 60px;
+			font-weight: bold;
+			text-align: center;
+			cursor: pointer;
+		}
+
+		.cell.x {
+			color: blue;
+		}
+
+		.cell.o {
+			color: red;
+		}
+	</style>
+</head>
+<body>
+	<h1 style="text-align: center; color: white;">Крестики-нолики</h1>
+	<div class="board">
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+	</div>
+
+	<script>
+		const cells = document.querySelectorAll('.cell');
+		let currentPlayer = 'x';
+		let gameOver = false;
+
+		const handleClick = (e) => {
+			const cell = e.target;
+			if (cell.classList.contains('x') || cell.classList.contains('o') || gameOver) {
+				return;
+			}
+			cell.classList.add(currentPlayer);
+			cell.textContent = currentPlayer;
+			if (checkWin()) {
+				gameOver = true;
+				alert(`${currentPlayer.toUpperCase()} выиграл!`);
+			} else if (checkTie()) {
+				gameOver = true;
+				alert("Ничья!");
+			} else {
+				currentPlayer = currentPlayer === 'x' ? 'o' : 'x';
+			}
+		};
+
+		const checkWin = () => {
+			const winningCombos = [
+				[0, 1, 2],
+				[3, 4, 5],
+				[6, 7, 8],
+				[0, 3, 6],
+				[1, 4, 7],
+				[2, 5, 8],
+				[0, 4, 8],
+				[2, 4, 6]
+			];
+			return winningCombos.some(combo => {
+				return combo.every(index => {
+					return cells[index].classList.contains(currentPlayer);
+				});
+			});
+		};
+
+		const checkTie = () => {
+			return [...cells].every(cell => {
+				return cell.classList.contains('x') || cell.classList.contains('o');
+			});
+		};
+
+		cells.forEach(cell => cell.addEventListener('click', handleClick));
+	</script>
+</body>
+</html>

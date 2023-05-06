@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Pong Game</title>
+	<style>
+		canvas {
+			border: 1px solid #000;
+		}
+	</style>
+</head>
+<body>
+	<h1>Pong Game</h1>
+	<p>Player: <span id="player-score">0</span></p>
+	<p>Opponent: <span id="opponent-score">0</span></p>
+	<canvas id="canvas" width="500" height="400"></canvas>
+	<script>
+		// Get canvas element and context
+		var canvas = document.getElementById("canvas");
+		var ctx = canvas.getContext("2d");
+
+		// Set initial scores
+		var playerScore = 0;
+		var opponentScore = 0;
+
+		// Set initial ball position and speed
+		var ball = {
+			x: canvas.width/2,
+			y: canvas.height/2,
+			dx: 5,
+			dy: 5,
+			radius: 10
+		};
+
+		// Set initial paddle positions and dimensions
+		var playerPaddle = {
+			x: 50,
+			y: canvas.height/2 - 50,
+			width: 10,
+			height: 100
+		};
+
+		var opponentPaddle = {
+			x: canvas.width - 60,
+			y: canvas.height/2 - 50,
+			width: 10,
+			height: 100
+		};
+
+		// Draw ball on canvas
+		function drawBall() {
+			ctx.beginPath();
+			ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+			ctx.fillStyle = "black";
+			ctx.fill();
+			ctx.closePath();
+		}
+
+		// Draw paddles on canvas
+		function drawPaddles() {
+			ctx.fillStyle = "green";
+			ctx.fillRect(playerPaddle.x, playerPaddle.y, playerPaddle.width, playerPaddle.height);
+			ctx.fillStyle = "red";
+			ctx.fillRect(opponentPaddle.x, opponentPaddle.y, opponentPaddle.width, opponentPaddle.height);
+		}
+
+		// Update ball position
+		function updateBall() {
+			ball.x += ball.dx;
+			ball.y += ball.dy;
+
+			// Check for collision with walls
+			if (ball.y + ball.radius >= canvas.height || ball.y - ball.radius <= 0) {
+				ball.dy = -ball.dy;
+			}
+
+			// Check for collision with player paddle
+			if (ball.x - ball.radius <= playerPaddle.x + playerPaddle.width && ball.y >= playerPaddle.y && ball.y <= playerPaddle.y + playerPaddle.height) {
+				ball.dx = -ball.dx;
+			}
+
+			// Check for collision with opponent paddle
+			if (ball.x + ball.radius >= opponentPaddle.x && ball.y >= opponentPaddle.y && ball.y <= opponentPaddle.y + opponentPaddle.height) {
+				ball.dx = -ball.dx;
+			}
+
+			// Check for scoring
+			if (ball.x - ball.radius <= 0) {
+				opponentScore++;
+				reset();
+			}
+
+			if (ball.x + ball.radius >= canvas.width) {
+				playerScore++;
+				reset();
+			}
+		}
+
+		// Update opponent paddle position
+		function updateOpponentPaddle() {
+			var paddleCenter = opponentPaddle.y + opponentPaddle.height/2;
+if (paddleCenter < ball.y - 35) {
+opponentPaddle.y += 7;
+} else if (paddleCenter > ball.y + 35) {
+opponentPaddle.y -= 7;
+}
+}	// Draw scores on canvas
+	function drawScores() {
+		document.getElementById("player-score").innerHTML = playerScore;
+		document.getElementById("opponent-score").innerHTML = opponentScore;
+	}
+
+	// Reset game
+	function reset() {
+		if (playerScore >= 5) {
+			alert("Congratulations! You won the game.");
+			document.location.reload();
+		} else if (opponentScore >= 5) {
+			alert("Game over. You lost the game.");
+			document.location.reload();
+		} else {
+			ball.x = canvas.width/2;
+			ball.y = canvas.height/2;
+			ball.dx = -ball.dx;
+		}
+	}
+
+	// Draw game on canvas
+	function draw() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		drawBall();
+		drawPaddles();
+		updateBall();
+		updateOpponentPaddle();
+		drawScores();
+	}
+
+	// Listen for player input
+	document.addEventListener("keydown", function(event) {
+		if (event.key === "a" && playerPaddle.y > 0) {
+			playerPaddle.y -= 10;
+		} else if (event.key === "d" && playerPaddle.y + playerPaddle.height < canvas.height) {
+			playerPaddle.y += 10;
+		} else if (event.key === "p") {
+			document.location.reload();
+		}
+	});
+
+	// Update game every 10 milliseconds
+	setInterval(draw, 10);
+</script>
+</body>
+</html>
+
+
